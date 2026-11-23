@@ -13,7 +13,7 @@ class PreferencesViewController: SettingsPaneController {
 
     static let hoverToExpandCheckBoxIdentifier = NSUserInterfaceItemIdentifier(UserDefaults.Key.hoverToExpand)
     static let autoHidePopupIdentifier = NSUserInterfaceItemIdentifier(UserDefaults.Key.isAutoHide)
-    static let languagePopupIdentifier = NSUserInterfaceItemIdentifier(LanguagePreferences.selectionKey)
+    static let languagePopupIdentifier = NSUserInterfaceItemIdentifier(LanguagePreferences.appleLanguagesKey)
 
     let statusCard = StatusCardView()
     let preview = MenuBarPreviewView()
@@ -142,7 +142,10 @@ class PreferencesViewController: SettingsPaneController {
     @objc private func languagePicked(_ sender: NSPopUpButton) {
         let languages = LanguagePreferences.languages()
         let index = sender.indexOfSelectedItem - 1
-        LanguagePreferences.setOverride(languages.indices.contains(index) ? languages[index].code : nil)
+        let picked = languages.indices.contains(index) ? languages[index].code : nil
+        // Picking what is already stored changes nothing, so it needs no restart.
+        guard picked != LanguagePreferences.override() else { return }
+        LanguagePreferences.setOverride(picked)
         guard AppDefaults.allowsHostSideEffects, let window = view.window else { return }
         // The App Store build cannot start the helper that reopens the app, so
         // it offers no restart button; the row's caption already says the choice

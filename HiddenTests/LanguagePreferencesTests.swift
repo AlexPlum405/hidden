@@ -19,14 +19,14 @@ final class LanguagePreferencesTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        suiteName = "LanguagePreferencesTests.\(UUID().uuidString)"
+        // The suite AppDefaults.domain(of:) maps a test store to.
+        suiteName = AppDefaults.testSuiteName
         store = UserDefaults(suiteName: suiteName)
         store.removePersistentDomain(forName: suiteName)
     }
 
     override func tearDown() {
         store.removePersistentDomain(forName: suiteName)
-        LanguagePreferences.setOverride(nil)
         super.tearDown()
     }
 
@@ -41,8 +41,8 @@ final class LanguagePreferencesTests: XCTestCase {
     }
 
     // Given no choice yet
-    // When Simplified Chinese is picked, then System is picked
-    // Then AppleLanguages holds the code, then goes away
+    // When a language is picked, then System is picked
+    // Then the app's own domain holds the code, then not even an empty list
     func test_overrideIsTheAppleLanguagesKey() {
         XCTAssertNil(LanguagePreferences.override(in: store))
         LanguagePreferences.setOverride("zh-Hans", in: store)
@@ -52,6 +52,18 @@ final class LanguagePreferencesTests: XCTestCase {
         LanguagePreferences.setOverride(nil, in: store)
         XCTAssertNil(store.persistentDomain(forName: suiteName)?[LanguagePreferences.appleLanguagesKey])
         XCTAssertNil(LanguagePreferences.override(in: store))
+    }
+
+    // Given macOS keeps the system language in the global domain
+    // When the row reads the app's own domain
+    // Then an absent key means "follow the system", not the global value a
+    // plain lookup would return
+    func test_overrideReadsTheAppsDomainOnly() {
+        XCTAssertNil(store.persistentDomain(forName: suiteName)?[LanguagePreferences.appleLanguagesKey])
+        XCTAssertNil(LanguagePreferences.override(in: store))
+        // A plain lookup does see the global domain, which is why the row cannot
+        // use one.
+        XCTAssertNotNil(store.stringArray(forKey: LanguagePreferences.appleLanguagesKey))
     }
 
     // Given a stored code
@@ -104,7 +116,7 @@ final class LanguagePreferencesTests: XCTestCase {
     // Given the build this test runs in
     // When Restart Now reports whether it can work
     // Then it is offered in the direct build only, as the App Store build is
-    // sandboxed and cannot start the helper
+    // sandboxed and cannot run the wait
     func test_relaunchFollowsTheBuild() {
         XCTAssertEqual(AppRelaunch.isAvailable, SettingsBuild.current == .direct)
     }
@@ -126,6 +138,7 @@ final class LanguagePreferencesTests: XCTestCase {
         popup.selectItem(at: index)
         _ = NSApp.sendAction(try XCTUnwrap(popup.action), to: popup.target, from: popup)
         XCTAssertEqual(LanguagePreferences.override(), "zh-Hans")
+        LanguagePreferences.setOverride(nil)
     }
 
     private func strings(for localization: String) throws -> [String: String] {

@@ -10,20 +10,13 @@ import Foundation
 
 /// The language Hidden Bar opens in.
 ///
-/// The choice is stored as `AppleLanguages` in the app's preferences, the key
-/// CFBundle reads while it resolves a localization, so it takes effect on the
-/// next launch. macOS's per-app language setting writes the same key, which
-/// keeps both controls on one value. No key means follow the system language.
+/// The app keeps no language key of its own: it reads and writes CFBundle's
+/// `AppleLanguages`, the same key macOS's per-app language panel uses, so both
+/// controls always show the same value. It takes effect on the next launch,
+/// which is why the row says so.
 enum LanguagePreferences {
-    /// CFBundle reads this key, so writing it is the whole override. macOS's
-    /// per-app language setting uses it too.
+    /// CFBundle reads this key, so writing it is the whole override.
     static let appleLanguagesKey = "AppleLanguages"
-
-    /// What the App language row picked. Separate from AppleLanguages because
-    /// UserDefaults falls back to the global domain, where macOS keeps the
-    /// system language: an absent AppleLanguages here must still mean "system",
-    /// not the system's first language.
-    static let selectionKey = "appLanguage"
 
     struct Language: Equatable {
         /// The localization code, such as "zh-Hans".
@@ -45,15 +38,16 @@ enum LanguagePreferences {
     }
 
     /// The stored override, or nil when the app follows the system language.
+    ///
+    /// Read from this app's own domain, never with `stringArray(forKey:)`: that
+    /// lookup falls back to the global domain, where macOS keeps the system
+    /// language, so "follow the system" would read back as that language
+    /// rather than as an empty list. `persistentDomain` holds only what this
+    /// app wrote, so a missing key really means no override.
     static func override(in store: UserDefaults = AppDefaults.store) -> String? {
-        if let code = store.string(forKey: selectionKey), !code.isEmpty { return code }
-        // macOS's per-app language panel writes AppleLanguages into this app's
-        // own domain. Read that domain, not the store, so the global domain
-        // (the system language) still reads as "follow the system".
-        guard store === UserDefaults.standard,
-              let bundleID = Bundle.main.bundleIdentifier,
-              let domain = store.persistentDomain(forName: bundleID),
-              let codes = domain[appleLanguagesKey] as? [String],
+        guard let domain = AppDefaults.domain(of: store),
+              let values = store.persistentDomain(forName: domain),
+              let codes = values[appleLanguagesKey] as? [String],
               let code = codes.first, !code.isEmpty else { return nil }
         return code
     }
@@ -68,10 +62,8 @@ enum LanguagePreferences {
     /// nil restores the system choice.
     static func setOverride(_ code: String?, in store: UserDefaults = AppDefaults.store) {
         if let code, !code.isEmpty {
-            store.set(code, forKey: selectionKey)
             store.set([code], forKey: appleLanguagesKey)
         } else {
-            store.removeObject(forKey: selectionKey)
             store.removeObject(forKey: appleLanguagesKey)
         }
     }
@@ -79,17 +71,18 @@ enum LanguagePreferences {
 
 /// Reopens the running bundle after this process exits. The helper waits for
 /// this process to leave, so the new instance does not see it and quit as a
-/// duplicate.
+/// duplicate. Shared by the language row and the App Store migration, so there
+/// is one reload script in the app.
 enum AppRelaunch {
     /// The App Store build is sandboxed. The helper itself starts there, but
     /// the sandbox denies the `kill -0` that tells whether this process has
-    /// left, so the row only says the language takes effect after a restart.
-    /// Settings shows the button in the direct build, where it works.
+    /// left, so the language row only says the choice takes effect after a
+    /// restart. Settings shows the button in the direct build, where it works.
     static var isAvailable: Bool {
         SettingsBuild.current == .direct
     }
 
-    /// The helper's arguments: wait until `pid` is gone, then open `url`.
+    /// Waits until `pid` is gone, then opens `url`.
     static func arguments(for url: URL, pid: Int32) -> [String] {
         ["-c", "while /bin/kill -0 \"$1\" 2>/dev/null; do /bin/sleep 0.2; done; /usr/bin/open \"$2\"",
          "sh", String(pid), url.path]
@@ -100,7 +93,7 @@ enum AppRelaunch {
     /// nothing left to reopen it.
     @discardableResult
     static func now(at url: URL = Bundle.main.bundleURL) -> Bool {
-        guard isAvailable, AppDefaults.allowsHostSideEffects else { return false }
+        guard AppDefaults.allowsHostSideEffects else { return false }
         let waiter = Process()
         waiter.executableURL = URL(fileURLWithPath: "/bin/sh")
         waiter.arguments = arguments(for: url, pid: ProcessInfo.processInfo.processIdentifier)
