@@ -54,28 +54,30 @@ final class LanguagePreferencesTests: XCTestCase {
         XCTAssertNil(LanguagePreferences.override(in: store))
     }
 
-    // Given macOS keeps the system language in the global domain
-    // When the row reads the app's own domain
-    // Then an absent key means "follow the system", not the global value a
-    // plain lookup would return
-    func test_overrideReadsTheAppsDomainOnly() {
-        XCTAssertNil(store.persistentDomain(forName: suiteName)?[LanguagePreferences.appleLanguagesKey])
-        XCTAssertNil(LanguagePreferences.override(in: store))
-        // A plain lookup does see the global domain, which is why the row cannot
-        // use one.
-        XCTAssertNotNil(store.stringArray(forKey: LanguagePreferences.appleLanguagesKey))
+    // Given one domain holding a language and another holding none
+    // When the row reads the second one
+    // Then it reads that domain only, so a key in another domain is not taken
+    // for a choice (macOS keeps the system language in the global one)
+    func test_overrideReadsOnlyTheNamedDomain() {
+        let otherName = "LanguagePreferencesTests.other.\(UUID().uuidString)"
+        let other = UserDefaults(suiteName: otherName)!
+        other.removePersistentDomain(forName: otherName)
+        other.set(["zh-Hant"], forKey: LanguagePreferences.appleLanguagesKey)
+        defer { other.removePersistentDomain(forName: otherName) }
+
+        XCTAssertEqual(LanguagePreferences.override(in: other, domain: otherName), "zh-Hant")
+        XCTAssertNil(LanguagePreferences.override(in: store, domain: suiteName))
     }
 
-    // Given a stored code
-    // When the build still ships it
-    // Then it wins; a code the build dropped falls back to a language it does ship
-    func test_effectiveKeepsOnlyShippedCodes() {
-        LanguagePreferences.setOverride("zh-Hans", in: store)
-        XCTAssertEqual(LanguagePreferences.effective(in: .main, store: store), "zh-Hans")
-        LanguagePreferences.setOverride("xx-Unknown", in: store)
-        let effective = LanguagePreferences.effective(in: .main, store: store)
-        XCTAssertNotEqual(effective, "xx-Unknown")
-        XCTAssertTrue(Bundle.main.localizations.contains(effective))
+    // Given a stored language
+    // When the same one is picked again, or another one is picked
+    // Then only the second needs a relaunch
+    func test_needsRestartOnlyWhenTheChoiceChanges() {
+        XCTAssertFalse(LanguagePreferences.needsRestart(from: "ja", to: "ja"))
+        XCTAssertFalse(LanguagePreferences.needsRestart(from: nil, to: nil))
+        XCTAssertTrue(LanguagePreferences.needsRestart(from: "ja", to: nil))
+        XCTAssertTrue(LanguagePreferences.needsRestart(from: nil, to: "ja"))
+        XCTAssertTrue(LanguagePreferences.needsRestart(from: "ja", to: "zh-Hans"))
     }
 
     // Given every English string

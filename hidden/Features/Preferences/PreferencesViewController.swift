@@ -144,7 +144,7 @@ class PreferencesViewController: SettingsPaneController {
         let index = sender.indexOfSelectedItem - 1
         let picked = languages.indices.contains(index) ? languages[index].code : nil
         // Picking what is already stored changes nothing, so it needs no restart.
-        guard picked != LanguagePreferences.override() else { return }
+        guard LanguagePreferences.needsRestart(from: LanguagePreferences.override(), to: picked) else { return }
         LanguagePreferences.setOverride(picked)
         guard AppDefaults.allowsHostSideEffects, let window = view.window else { return }
         // The App Store build cannot start the helper that reopens the app, so

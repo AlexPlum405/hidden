@@ -49,10 +49,10 @@ enum AppDefaults {
         return suite
     }
 
-    /// The domain a store keeps its own values in. `UserDefaults.standard` holds
-    /// the app's bundle domain on a shipping launch, and the test suite under
-    /// XCTest, so a reader that must not see the global domain names this one.
-    static func domain(of store: UserDefaults) -> String? {
-        store === UserDefaults.standard ? Bundle.main.bundleIdentifier : testSuiteName
+    /// The domain this process keeps its own preferences in: the bundle domain
+    /// on a shipping launch, the test suite under XCTest. Readers that must not
+    /// see the global domain (where macOS keeps the system language) name this.
+    static var storeDomain: String? {
+        isRunningUnderXCTest ? testSuiteName : Bundle.main.bundleIdentifier
     }
 }

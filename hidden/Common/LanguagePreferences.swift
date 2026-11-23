@@ -44,19 +44,19 @@ enum LanguagePreferences {
     /// language, so "follow the system" would read back as that language
     /// rather than as an empty list. `persistentDomain` holds only what this
     /// app wrote, so a missing key really means no override.
-    static func override(in store: UserDefaults = AppDefaults.store) -> String? {
-        guard let domain = AppDefaults.domain(of: store),
+    static func override(in store: UserDefaults = AppDefaults.store,
+                         domain: String? = AppDefaults.storeDomain) -> String? {
+        guard let domain,
               let values = store.persistentDomain(forName: domain),
               let codes = values[appleLanguagesKey] as? [String],
               let code = codes.first, !code.isEmpty else { return nil }
         return code
     }
 
-    /// What the next launch will use. A code this build no longer ships falls
-    /// back to the system choice instead of leaving the bundle with nothing.
-    static func effective(in bundle: Bundle = .main, store: UserDefaults = AppDefaults.store) -> String {
-        if let code = override(in: store), bundle.localizations.contains(code) { return code }
-        return bundle.preferredLocalizations.first ?? bundle.developmentLocalization ?? "en"
+    /// Whether picking `picked` needs a relaunch: only when it differs from what
+    /// is stored. Picking the language already in effect changes nothing.
+    static func needsRestart(from stored: String?, to picked: String?) -> Bool {
+        stored != picked
     }
 
     /// nil restores the system choice.
@@ -93,7 +93,7 @@ enum AppRelaunch {
     /// nothing left to reopen it.
     @discardableResult
     static func now(at url: URL = Bundle.main.bundleURL) -> Bool {
-        guard AppDefaults.allowsHostSideEffects else { return false }
+        guard isAvailable, AppDefaults.allowsHostSideEffects else { return false }
         let waiter = Process()
         waiter.executableURL = URL(fileURLWithPath: "/bin/sh")
         waiter.arguments = arguments(for: url, pid: ProcessInfo.processInfo.processIdentifier)
