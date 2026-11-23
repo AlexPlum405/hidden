@@ -144,6 +144,10 @@ class PreferencesViewController: SettingsPaneController {
         let index = sender.indexOfSelectedItem - 1
         LanguagePreferences.setOverride(languages.indices.contains(index) ? languages[index].code : nil)
         guard AppDefaults.allowsHostSideEffects, let window = view.window else { return }
+        // The App Store build cannot start the helper that reopens the app, so
+        // it offers no restart button; the row's caption already says the choice
+        // takes effect after Hidden Bar restarts.
+        guard AppRelaunch.isAvailable else { return }
         let alert = NSAlert()
         alert.messageText = "Restart Hidden Bar to apply the new language.".localized
         alert.addButton(withTitle: "Restart Now".localized)

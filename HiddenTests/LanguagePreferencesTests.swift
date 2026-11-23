@@ -83,6 +83,32 @@ final class LanguagePreferencesTests: XCTestCase {
         XCTAssertEqual(chinese["Language"], "语言")
     }
 
+    // Given the built app
+    // When Restart Now builds its helper
+    // Then the helper waits for this process to exit before opening the bundle,
+    // rather than opening on a fixed delay and racing the old instance
+    func test_relaunchHelperWaitsForThisProcess() {
+        let url = URL(fileURLWithPath: "/Applications/Hidden Bar.app")
+        let arguments = AppRelaunch.arguments(for: url, pid: 4321)
+        XCTAssertEqual(arguments.first, "-c")
+        let script = arguments[1]
+        XCTAssertTrue(script.contains("kill -0"))
+        XCTAssertTrue(script.contains("/bin/sleep 0.2"))
+        XCTAssertFalse(script.contains("sleep 1;"))
+        XCTAssertTrue(script.contains("/usr/bin/open"))
+        XCTAssertEqual(arguments[2], "sh")
+        XCTAssertEqual(arguments[3], "4321")
+        XCTAssertEqual(arguments[4], url.path)
+    }
+
+    // Given the build this test runs in
+    // When Restart Now reports whether it can work
+    // Then it is offered in the direct build only, as the App Store build is
+    // sandboxed and cannot start the helper
+    func test_relaunchFollowsTheBuild() {
+        XCTAssertEqual(AppRelaunch.isAvailable, SettingsBuild.current == .direct)
+    }
+
     // Given the General pane
     // When it lays out
     // Then the language popup lists System first and writes the picked language

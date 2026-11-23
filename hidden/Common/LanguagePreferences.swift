@@ -77,15 +77,40 @@ enum LanguagePreferences {
     }
 }
 
-/// Reopens the running bundle after this process exits. A short delay lets the
-/// old instance leave before the new one checks for a duplicate.
+/// Reopens the running bundle after this process exits. The helper waits for
+/// this process to leave, so the new instance does not see it and quit as a
+/// duplicate.
 enum AppRelaunch {
-    static func now() {
-        guard AppDefaults.allowsHostSideEffects else { return }
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/bin/sh")
-        task.arguments = ["-c", "sleep 1; /usr/bin/open \"$1\"", "relaunch", Bundle.main.bundleURL.path]
-        try? task.run()
+    /// The App Store build is sandboxed. The helper itself starts there, but
+    /// the sandbox denies the `kill -0` that tells whether this process has
+    /// left, so the row only says the language takes effect after a restart.
+    /// Settings shows the button in the direct build, where it works.
+    static var isAvailable: Bool {
+        SettingsBuild.current == .direct
+    }
+
+    /// The helper's arguments: wait until `pid` is gone, then open `url`.
+    static func arguments(for url: URL, pid: Int32) -> [String] {
+        ["-c", "while /bin/kill -0 \"$1\" 2>/dev/null; do /bin/sleep 0.2; done; /usr/bin/open \"$2\"",
+         "sh", String(pid), url.path]
+    }
+
+    /// True once the helper is running and this process is quitting. A helper
+    /// that cannot start leaves the app open: quitting then would close it with
+    /// nothing left to reopen it.
+    @discardableResult
+    static func now(at url: URL = Bundle.main.bundleURL) -> Bool {
+        guard isAvailable, AppDefaults.allowsHostSideEffects else { return false }
+        let waiter = Process()
+        waiter.executableURL = URL(fileURLWithPath: "/bin/sh")
+        waiter.arguments = arguments(for: url, pid: ProcessInfo.processInfo.processIdentifier)
+        do {
+            try waiter.run()
+        } catch {
+            NSLog("AppRelaunch: relaunch failed: \(error.localizedDescription)")
+            return false
+        }
         NSApp.terminate(nil)
+        return true
     }
 }
