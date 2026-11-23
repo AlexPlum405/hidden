@@ -319,3 +319,10 @@
 "Restart Hidden Bar to apply the new language." = "Перезапустіть Hidden Bar, щоб застосувати нову мову.";
 "Restart Now" = "Перезапустити зараз";
 "Later" = "Пізніше";
+"Restore settings from the App Store version" = "Відновити налаштування з версії з App Store";
+"Copies the settings the App Store version saved into this version. Your current settings are replaced." = "Копіює в цю версію налаштування, збережені версією з App Store. Ваші поточні налаштування буде замінено.";
+"Restore…" = "Відновити…";
+"Restore your settings from the App Store version?" = "Відновити налаштування з версії з App Store?";
+"This replaces the settings you have now with the ones the App Store version saved." = "Це замінить ваші поточні налаштування тими, що зберегла версія з App Store.";
+"Restore" = "Відновити";
+"Settings restored: %d" = "Відновлено налаштувань: %d";

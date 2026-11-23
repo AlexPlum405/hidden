@@ -4,6 +4,10 @@
 
 ### Added
 - Settings › General › "App language": follow macOS, or pick any language the build ships. The list uses each language's own name, so 简体中文 is findable while the app is in another language. The choice is stored where macOS keeps an app's own language, so it takes effect after Hidden Bar restarts; macOS's per-app language panel writes the same value. The new row is translated in all 13 languages.
+- Settings › Advanced › "Restore settings from the App Store version" (direct build): copies the settings the App Store version saved back into this version, any time, after a confirmation. Hidden Bar also keeps a private copy of those settings in `~/Library/Application Support/Hidden Bar/` the first time it can read them, so they stay reachable if macOS later blocks the App Store container or the App Store copy is removed.
+
+### Fixed
+- Switching from the App Store version: the import offer can no longer be lost for good. It used to appear once, and only while this version still had default settings. The Accessibility prompt no longer opens over the import alert, and the log now says why the offer did or did not show ("AppStoreMigration: import offer skipped: ...").
 
 ## v1.13.3 (2026-11-23)
 

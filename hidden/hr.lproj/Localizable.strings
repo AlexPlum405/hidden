@@ -319,3 +319,10 @@
 "Restart Hidden Bar to apply the new language." = "Ponovno pokrenite Hidden Bar da biste primijenili novi jezik.";
 "Restart Now" = "Ponovno pokreni";
 "Later" = "Kasnije";
+"Restore settings from the App Store version" = "Vrati postavke iz App Store verzije";
+"Copies the settings the App Store version saved into this version. Your current settings are replaced." = "Kopira postavke koje je spremila App Store verzija u ovu verziju. Tvoje trenutne postavke bit će zamijenjene.";
+"Restore…" = "Vrati …";
+"Restore your settings from the App Store version?" = "Vratiti postavke iz App Store verzije?";
+"This replaces the settings you have now with the ones the App Store version saved." = "Ovo zamjenjuje tvoje trenutne postavke onima koje je spremila App Store verzija.";
+"Restore" = "Vrati";
+"Settings restored: %d" = "Vraćene postavke: %d";

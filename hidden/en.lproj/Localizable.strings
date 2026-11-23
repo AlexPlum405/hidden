@@ -318,3 +318,10 @@ Steps to view always hidden icons:
 "Restart Hidden Bar to apply the new language." = "Restart Hidden Bar to apply the new language.";
 "Restart Now" = "Restart Now";
 "Later" = "Later";
+"Restore settings from the App Store version" = "Restore settings from the App Store version";
+"Copies the settings the App Store version saved into this version. Your current settings are replaced." = "Copies the settings the App Store version saved into this version. Your current settings are replaced.";
+"Restore…" = "Restore…";
+"Restore your settings from the App Store version?" = "Restore your settings from the App Store version?";
+"This replaces the settings you have now with the ones the App Store version saved." = "This replaces the settings you have now with the ones the App Store version saved.";
+"Restore" = "Restore";
+"Settings restored: %d" = "Settings restored: %d";

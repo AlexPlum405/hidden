@@ -319,3 +319,10 @@ Zum Anzeigen der permanent ausgeblendeten Symbole:
 "Restart Hidden Bar to apply the new language." = "Starten Sie Hidden Bar neu, um die neue Sprache anzuwenden.";
 "Restart Now" = "Jetzt neu starten";
 "Later" = "Später";
+"Restore settings from the App Store version" = "Einstellungen aus der App-Store-Version wiederherstellen";
+"Copies the settings the App Store version saved into this version. Your current settings are replaced." = "Kopiert die Einstellungen, die die App-Store-Version gespeichert hat, in diese Version. Deine aktuellen Einstellungen werden ersetzt.";
+"Restore…" = "Wiederherstellen…";
+"Restore your settings from the App Store version?" = "Einstellungen aus der App-Store-Version wiederherstellen?";
+"This replaces the settings you have now with the ones the App Store version saved." = "Dadurch werden deine aktuellen Einstellungen durch die ersetzt, die die App-Store-Version gespeichert hat.";
+"Restore" = "Wiederherstellen";
+"Settings restored: %d" = "Einstellungen wiederhergestellt: %d";

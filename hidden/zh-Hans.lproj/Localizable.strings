@@ -321,3 +321,10 @@
 "Restart Hidden Bar to apply the new language." = "重启 Hidden Bar 后新语言才会生效。";
 "Restart Now" = "立即重启";
 "Later" = "稍后";
+"Restore settings from the App Store version" = "从 App Store 版恢复设置";
+"Copies the settings the App Store version saved into this version. Your current settings are replaced." = "将 App Store 版保存的设置复制到此版本。您当前的设置将被替换。";
+"Restore…" = "恢复…";
+"Restore your settings from the App Store version?" = "要从 App Store 版恢复您的设置吗？";
+"This replaces the settings you have now with the ones the App Store version saved." = "这将用 App Store 版保存的设置替换您当前的设置。";
+"Restore" = "恢复";
+"Settings restored: %d" = "已恢复的设置数：%d";
